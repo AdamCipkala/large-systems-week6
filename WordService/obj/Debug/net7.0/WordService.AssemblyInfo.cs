@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WordService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+26e60cad586040b2f14f2ec982adc19cf17b2562")]
 [assembly: System.Reflection.AssemblyProductAttribute("WordService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WordService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

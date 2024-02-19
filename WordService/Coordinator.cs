@@ -1,7 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
-
+using System.Threading.Tasks;
 namespace WordService;
 
 public class Coordinator
@@ -13,57 +13,59 @@ public class Coordinator
     private const string MEDIUM_WORD_DB = "medium-word-db";
     private const string LONG_WORD_DB = "long-word-db";
 
-    public DbConnection GetDocumentConnection()
+    public async Task<DbConnection> GetDocumentConnectionAsync()
     {
-        return GetConnectionByServerName(DOCUMENT_DB);
+        return await GetConnectionByServerNameAsync(DOCUMENT_DB);
     }
 
-    public DbConnection GetOccurrenceConnection()
+    public async Task<DbConnection> GetOccurrenceConnectionAsync()
     {
-        return GetConnectionByServerName(OCCURRENCE_DB);
+        return await GetConnectionByServerNameAsync(OCCURRENCE_DB);
     }
-    
-    public DbConnection GetWordConnection(string word)
+
+    public async Task<DbConnection> GetWordConnectionAsync(string word)
     {
         switch (word.Length)
         {
             case var l when (l <= 10):
-                return GetConnectionByServerName(SHORT_WORD_DB);
+                return await GetConnectionByServerNameAsync(SHORT_WORD_DB);
             case var l when (l > 10 && l <= 20):
-                return GetConnectionByServerName(MEDIUM_WORD_DB);
+                return await GetConnectionByServerNameAsync(MEDIUM_WORD_DB);
             case var l when (l >= 21):
-                return GetConnectionByServerName(LONG_WORD_DB);
+                return await GetConnectionByServerNameAsync(LONG_WORD_DB);
             default:
                 throw new InvalidDataException();
         }
     }
 
-    public IEnumerable<DbConnection> GetAllConnections()
+    public async IAsyncEnumerable<DbConnection> GetAllConnectionsAsync()
     {
-        yield return GetDocumentConnection();
-        yield return GetOccurrenceConnection();
-        foreach (var wordConnection in GetAllWordConnections())
+        yield return await GetDocumentConnectionAsync();
+        yield return await GetOccurrenceConnectionAsync();
+        await foreach (var wordConnection in GetAllWordConnectionsAsync())
         {
             yield return wordConnection;
         }
     }
-    
-    public IEnumerable<DbConnection> GetAllWordConnections()
+
+    public async IAsyncEnumerable<DbConnection> GetAllWordConnectionsAsync()
     {
-        yield return GetConnectionByServerName(SHORT_WORD_DB);
-        yield return GetConnectionByServerName(MEDIUM_WORD_DB);
-        yield return GetConnectionByServerName(LONG_WORD_DB);
+        yield return await GetConnectionByServerNameAsync(SHORT_WORD_DB);
+        yield return await GetConnectionByServerNameAsync(MEDIUM_WORD_DB);
+        yield return await GetConnectionByServerNameAsync(LONG_WORD_DB);
     }
 
-    private DbConnection GetConnectionByServerName(string serverName)
+    private async Task<DbConnection> GetConnectionByServerNameAsync(string serverName)
     {
         if (ConnectionCache.TryGetValue(serverName, out var connection))
         {
             return connection;
         }
-        
+
         connection = new SqlConnection($"Server={serverName};User Id=sa;Password=SuperSecret7!;Encrypt=false;");
-        connection.Open();
+
+        await connection.OpenAsync();
+
         ConnectionCache.Add(serverName, connection);
         return connection;
     }
